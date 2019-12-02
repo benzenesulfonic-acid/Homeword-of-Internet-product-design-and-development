@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <title>管理电影类型</title>
+
+    <link rel="stylesheet" href="./css/libs/pure-min.css">
+    <script src="./js/libs/vue.js"></script>
+    <script src="./js/libs/jquery-3.4.1.min.js"></script>
+
+    <script>
+        var functions;
+        var types = new Array();
+        var app;
+        $().ready(function() {
+            init_functions();
+            get_types();
+        });
+
+        //获取可用方法
+        function init_functions() {
+            $.ajax({
+                url: "./php/manage/list_add_function.php",
+                type: 'GET',
+                error: function() {
+                    alert("网络连接错误!");
+                },
+                success: function(data) {
+                    let response = JSON.parse(data);
+                    if (response.is_error) {
+                        alert("获取功能失败");
+                    } else {
+                        functions = response.result;
+                    }
+                    init_vue();
+                }
+            });
+        }
+
+        //获取所有类型
+        function get_types() {
+            $.ajax({
+                url: "./php/manage/list_types.php",
+                type: 'GET',
+                error: function() {
+                    alert("网络连接错误!");
+                },
+                success: function(data) {
+                    let result = JSON.parse(data);
+                    if (result.is_error) {
+                        alert("获取类型失败");
+                    } else {
+                        types.length = 0;
+                        ltypes = result.result;
+                        for (i in ltypes) {
+                            types.push(ltypes[i]);
+                        }
+                    }
+                }
+            });
+        }
+
+        function init_vue() {
+            app = new Vue({
+                el: "#app",
+                data: {
+                    functions: functions,
+                    types: types,
+                    new_type_names: new Array(),
+                    add_type_name: ""
+                },
+                methods: {
+                    change_type: function(type_id) {
+                        let type_name = this.$data.new_type_names[type_id];
+                        $.ajax({
+                            url: "./php/manage/change_type.php",
+                            type: "POST",
+                            data: {
+                                type_id: type_id,
+                                type_name: type_name
+                            },
+                            error: function() {
+                                alert("网络连接错误!");
+                            },
+                            success: function(data) {
+                                let response = JSON.parse(data);
+                                if (response.is_error) {
+                                    alert("更新失败");
+                                } else {
+                                    get_types();
+                                }
+                            }
+                        });
+                    },
+                    delete_type: function(type_id) {
+                        console.log(type_id);
+                        if (confirm("你确定要删除该类别?")) {
+                            $.ajax({
+                                url: "./php/manage/delete_type.php",
+                                type: "POST",
+                                data: {
+                                    type_id: type_id
+                                },
+                                error: function() {
+                                    alert("网络连接错误!");
+                                },
+                                success: function(data) {
+                                    let response = JSON.parse(data);
+                                    if (response.is_error) {
+                                        alert("删除失败");
+                                    } else {
+                                        get_types();
+                                    }
+                                }
+                            });
+                        }
+                    },
+                    add_type: function() {
+                        console.log(this.$data.add_type_name);
+                        if (this.$data.add_type_name == "") {
+                            alert("请输入新类型名");
+                        } else {
+                            $.ajax({
+                                url: "./php/manage/add_type.php",
+                                type: "POST",
+                                data: {
+                                    type_name: this.$data.add_type_name
+                                },
+                                error: function() {
+                                    alert("网络连接错误!");
+                                },
+                                success: function(data) {
+                                    let response = JSON.parse(data);
+                                    if (response.is_error) {
+                                        alert("添加失败");
+                                    } else {
+                                        get_types();
+                                        app.$data.add_type_name = "";
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+    <style>
+        .container {
+            padding: 1em 2em;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" style="height: 100vh;">
+        <div class="pure-g">
+            <div class="pure-u-1-5 pure-menu nav-bar">
+                <ul class="pure-menu-list">
+                    <span class="pure-menu-heading">功能</span>
+                    <hr>
+                    <li v-for="func in functions" class="pure-menu-item">
+                        <a v-bind:href="func.function_url" class="pure-menu-link">{{func.function_name}}</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="pure-u-4-5">
+                <div class="container">
+                    <table class="pure-table pure-table-striped pure-table-horizontal">
+                        <thead>
+                            <tr>
+                                <th>
+                                    类型ID
+                                </th>
+                                <th>
+                                    类型名
+                                </th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="atype in types">
+                                <td>{{atype.type_id}}</td>
+                                <td>{{atype.type_name}}</td>
+                                <td>
+                                    <form class="pure-form">
+                                        <input v-model="new_type_names[atype.type_id]" type="text" class="">
+                                        <button v-on:click="change_type(atype.type_id)" type="button" class="pure-button">改名</button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <button v-on:click="delete_type(atype.type_id)" type="button" class="pure-button">删除</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td>
+                                    <form class="pure-form">
+                                        <input v-model="add_type_name" type="text">
+                                        <button v-on:click="add_type()" type="button" class="pure-button">添加</button>
+                                    </form>
+                                </td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

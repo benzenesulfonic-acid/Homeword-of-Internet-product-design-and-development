@@ -1,0 +1,2 @@
+http://127.0.0.1/film/php/manage/list_add_function.php 
+http://127.0.0.1/film/php/manage/list_types.php 

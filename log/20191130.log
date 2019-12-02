@@ -1,0 +1,7 @@
+2019-11-30 09:49:26 | DEBUG | {"is_error":false,"error_type":"","error_message":"","result":[{"function_name":"\u7ba1\u7406\u7535\u5f71","function_url":".\/manage_film.html"},{"function_name":"\u7ba1\u7406\u7535\u5f71\u7c7b\u578b","function_url":".\/manage_type.html"}]}
+2019-11-30 09:49:26 | DEBUG | {"is_error":false,"error_type":"","error_message":"","result":[{"type_id":"1","type_name":"\u60ac\u7591"},{"type_id":"2","type_name":"\u519b\u4e8b"}]}
+2019-11-30 10:03:24 | 4 | {"is_error":false,"error_type":"","error_message":"","result":[{"function_name":"\u7ba1\u7406\u7535\u5f71","function_url":".\/manage_film.html"},{"function_name":"\u7ba1\u7406\u7535\u5f71\u7c7b\u578b","function_url":".\/manage_type.html"}]}
+2019-11-30 10:03:24 | 4 | {"is_error":false,"error_type":"","error_message":"","result":[{"type_id":"1","type_name":"\u60ac\u7591"},{"type_id":"2","type_name":"\u519b\u4e8b"}]}
+2019-11-30 10:04:16 | DEBUG | {"is_error":false,"error_type":"","error_message":"","result":[{"function_name":"\u7ba1\u7406\u7535\u5f71","function_url":".\/manage_film.html"},{"function_name":"\u7ba1\u7406\u7535\u5f71\u7c7b\u578b","function_url":".\/manage_type.html"}]}
+2019-11-30 10:04:16 | DEBUG | {"is_error":false,"error_type":"","error_message":"","result":[{"type_id":"1","type_name":"\u60ac\u7591"},{"type_id":"2","type_name":"\u519b\u4e8b"}]}
+2019-11-30 10:12:01 | ERROR | [{"errno":2019,"sqlstate":"HY000","error":"Invalid characterset or character set not supported"}]

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <title>管理电影类型</title>
+
+    <link rel="stylesheet" href="./css/libs/pure-min.css">
+    <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+    <script src="./js/libs/vue.js"></script>
+    <script src="./js/libs/jquery-3.4.1.min.js"></script>
+
+    <script src="./js/store.js"></script>
+
+    <script>
+        var store = new store_builder();
+        store.put('functions', '');
+
+        var nav = '';
+        var app = '';
+
+        $().ready(function() {
+            init_functions();
+            init_nav();
+        });
+
+        //设置侧栏
+        function init_nav() {
+            nav = new Vue({
+                el: "#nav",
+                data: store.state,
+            });
+        }
+
+        //获取可用方法
+        function init_functions() {
+            $.ajax({
+                url: "./php/manage/list_add_function.php",
+                type: 'GET',
+                error: function() {
+                    alert("网络连接错误!");
+                },
+                success: function(data) {
+                    let response = JSON.parse(data);
+                    if (response.is_error) {
+                        alert("获取功能失败");
+                    } else {
+                        store.put('functions', response.result);
+                    }
+                }
+            });
+        }
+    </script>
+
+    <style>
+        .container {
+            padding: 1em 2em;
+            position: relative;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" style="height: 100vh;">
+        <div class="pure-g">
+            <div class="pure-u-1-5 pure-menu nav-bar">
+                <ul id="nav" class="pure-menu-list">
+                    <span class="pure-menu-heading">功能</span>
+                    <hr>
+                    <li v-for="func in functions" class="pure-menu-item">
+                        <a v-bind:href="func.function_url" class="pure-menu-link">{{func.function_name}}</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="pure-u-4-5">
+                <div id="app" class="container">
+                    <div>
+                        <h3>
+                            <i class="fa fa-sliders-h"></i><span>筛选器</span>
+                            <div style="">
+                                <i class="fa fa-close "></i><span>清楚所有筛选器</span>
+                            </div>
+                        </h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
