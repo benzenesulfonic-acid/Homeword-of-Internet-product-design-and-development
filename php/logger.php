@@ -27,7 +27,7 @@ final class Logger{
     }
 
     public static function notice($message){
-        slef::log(self::$NOTICE,$message);
+        self::log(self::$NOTICE,$message);
     } 
 
     public static function debug($message){

@@ -25,7 +25,13 @@ function get_config()
      * level    - 日志记录级别 (1 - ERROR, 2 - WARNING, 3 - NOTICE, 4 - DEBUG)
      */
     $config['log']['basepath'] = "./log/";
-    $config['log']['level']=3;
+    $config['log']['level'] = 3;
+
+    /**
+     * 查询电影相关
+     * maxsize  - 每个查询最多返回的电影数量
+     */
+    $config['research']['maxsize'] = 100;
 
     return $config;
 }

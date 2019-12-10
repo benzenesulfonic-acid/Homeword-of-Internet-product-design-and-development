@@ -1,0 +1,40 @@
+2019-12-05 08:23:32 | ERROR | D:\WebDevX64\MyWeb\film\php\mysqli_connect.php:58 []
+2019-12-05 08:23:32 | ERROR | D:\WebDevX64\MyWeb\film\php\mysqli_connect.php:61 []
+2019-12-05 08:23:32 | WARNING | {"is_error":true,"error_type":102,"error_message":null,"result":""}
+2019-12-05 08:26:12 | ERROR | D:\WebDevX64\MyWeb\film\php\mysqli_connect.php:58 []
+2019-12-05 08:26:12 | ERROR | D:\WebDevX64\MyWeb\film\php\mysqli_connect.php:61 []
+2019-12-05 08:26:12 | WARNING | {"is_error":true,"error_type":102,"error_message":null,"result":""}
+2019-12-05 08:29:38 | ERROR | 
+SELECT id,name,name_CN,language,release_time,movie_douban FROM film  WHERE true  and (release_time > ? or release_time < ?)  and (name LIKE ? or name_CN LIKE ?)  LIMIT 100  OFFSET 0 
+ssss
+[["2018-01-01","2019-12-31","%\u4f60%","%\u4f60%"]]
+2019-12-05 08:29:38 | ERROR | D:\WebDevX64\MyWeb\film\php\mysqli_connect.php:59 []
+2019-12-05 08:29:38 | WARNING | {"is_error":true,"error_type":102,"error_message":null,"result":""}
+2019-12-05 08:40:02 | ERROR | send ["2018-01-01","2019-12-31","%\u4f60%","%\u4f60%"]
+2019-12-05 08:40:02 | ERROR | 
+SELECT id,name,name_CN,language,release_time,movie_douban FROM film  WHERE true  and (release_time > ? and release_time < ?)  and (name LIKE ? or name_CN LIKE ?)  LIMIT 100  OFFSET 0 
+ssss
+[["2018-01-01","2019-12-31","%\u4f60%","%\u4f60%"]]
+2019-12-05 08:40:02 | ERROR | D:\WebDevX64\MyWeb\film\php\mysqli_connect.php:59 []
+2019-12-05 08:40:02 | WARNING | {"is_error":true,"error_type":102,"error_message":null,"result":""}
+2019-12-05 08:40:41 | ERROR | send 
+2019-12-05 08:40:41 | ERROR | 
+SELECT id,name,name_CN,language,release_time,movie_douban FROM film  WHERE true  and (release_time > ? and release_time < ?)  and (name LIKE ? or name_CN LIKE ?)  LIMIT 100  OFFSET 0 
+ssss
+["2018-01-01","2019-12-31","%\u4f60%","%\u4f60%"]
+2019-12-05 08:40:41 | ERROR | 
+SELECT director_name FROM film_director WHERE film_id=?
+i
+[1]
+2019-12-05 08:40:41 | ERROR | 
+SELECT screenwriter_name FROM film_screenwriter WHERE film_id=?
+i
+[1]
+2019-12-05 08:40:41 | ERROR | 
+SELECT starring_name FROM film_starring WHERE film_id=?
+i
+[1]
+2019-12-05 08:40:41 | ERROR | 
+SELECT type_id , type_name FROM film_type,type WHERE type_id=id and film_id=?
+i
+[1]

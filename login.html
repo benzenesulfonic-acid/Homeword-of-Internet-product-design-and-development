@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <title>登录垃圾版豆瓣电影</title>
+
+    <link rel="stylesheet" href="./css/libs/pure-min.css">
+    <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.css" rel="stylesheet">
+    <script src="./js/libs/vue.js"></script>
+    <script src="./js/libs/jquery-3.4.1.min.js"></script>
+    <script src="./js/libs/sha3.js"></script>
+
+    <script src="./js/store.js"></script>
+
+    <script>
+        store = new store_builder();
+        store.put('user_name', '');
+        store.put('password', '');
+
+        app = '';
+
+        $().ready(function() {
+            init_app();
+        });
+
+        function init_app() {
+            app = new Vue({
+                el: "#app",
+                data: store.state,
+                methods: {
+                    check_login: function() {
+                        if (this.user_name == "") {
+                            alert("用户名不能为空");
+                            return false;
+                        }
+                        if (this.password == "") {
+                            alert("密码不能为空");
+                            return false;
+                        }
+                        return true;
+                    },
+                    login: function() {
+                        if (!this.check_login()) {
+                            return;
+                        }
+                        let sha_builder = new jsSHA("SHA3-512", "TEXT");
+                        sha_builder.update(this.password);
+                        let sha3 = sha_builder.getHash("HEX");
+                        $.ajax({
+                            url: "./php/view/login.php",
+                            type: "POST",
+                            data: {
+                                user_name: this.user_name,
+                                password: sha3,
+                            },
+                            error: function() {
+                                alert("网络连接错误!");
+                            },
+                            success: function(data) {
+                                let response = JSON.parse(data);
+                                if (response.is_error) {
+                                    if (response.error_type == "401") {
+                                        alert("用户名或密码错误");
+                                    } else {
+                                        alert("登录失败");
+                                    }
+                                } else {
+                                    alert("登录成功");
+                                    window.location.assign("./index.html");
+                                }
+                            }
+                        });
+                    },
+                    nav2signup: function() {
+                        window.location.assign("./signup.html");
+                    }
+                },
+            });
+        }
+    </script>
+
+    <style>
+        .view-holder {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .view-container {
+            padding: 1.25rem;
+            border-style: solid;
+            border-radius: 0.75rem;
+            border-color: #e6e6e6;
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="view-holder">
+        <div id="app" class="view-container">
+            <form class="pure-form pure-form-stacked">
+                <fieldset>
+                    <legend>登录垃圾版豆瓣电影</legend>
+
+                    <label>用户名</label>
+                    <input v-model="user_name" type="text" maxlength="12" placeholder="user name">
+
+                    <label>密码</label>
+                    <input v-model="password" type="password" placeholder="password">
+                </fieldset>
+                <fieldset>
+                    <button v-on:click="login()" class="pure-button" type="button">登录</button>
+                    <button v-on:click="nav2signup()" class="pure-button" type="button">注册</button>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+    <script type="text/javascript" color="0,0,200" zIndex="-2" count="150" src="./js/libs/canvas-nest.js"></script>
+</body>
+
+</html>

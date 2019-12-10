@@ -18,7 +18,35 @@ class response
         } else {
             $this->is_error = true;
             if ($error_type != null) {
-                if (!set_error_type($error_type)) {
+                if (!$this->set_error_type($error_type)) {
+                    $this->error_type = $error_type;
+                    if ($error_type != null) {
+                        $this->error_message = $error_message;
+                    }
+                }
+            }
+            if ($result != null) {
+                $this->result = $result;
+            }
+        }
+    }
+
+    //快速设置response
+    public function set_response($response_true = false, $error_type = null, $error_message = null, $result = null){
+        if ($response_true) {
+            $this->is_error = false;
+            $this->error_type='';
+            $this->error_message='';
+            if ($error_type != null) {
+                $this->result = $error_type;
+            }
+            else{
+                $this->result ='';
+            }
+        } else {
+            $this->is_error = true;
+            if ($error_type != null) {
+                if (!$this->set_error_type($error_type)) {
                     $this->error_type = $error_type;
                     if ($error_type != null) {
                         $this->error_message = $error_message;

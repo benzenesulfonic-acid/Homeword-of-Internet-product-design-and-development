@@ -1,0 +1,14 @@
+2019-12-08 15:21:44 | ERROR | D:\WebDevX64\MyWeb\film\php\mysqli_connect.php:63 [{"errno":1064,"sqlstate":"42000","error":"You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '\\`user\\` WHERE user_name=?' at line 1"}]
+2019-12-08 15:24:29 | ERROR | D:\WebDevX64\MyWeb\film\php\mysqli_connect.php:63 [{"errno":1064,"sqlstate":"42000","error":"You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '\\`user\\` WHERE user_name=?' at line 1"}]
+2019-12-08 15:28:04 | WARNING | {"is_error":true,"error_type":102,"error_message":null,"result":""}
+2019-12-08 15:28:19 | WARNING | {"is_error":true,"error_type":102,"error_message":null,"result":""}
+2019-12-08 15:31:42 | WARNING | {"is_error":true,"error_type":102,"error_message":null,"result":""}
+2019-12-08 15:34:02 | WARNING | {"is_error":true,"error_type":102,"error_message":null,"result":""}
+2019-12-08 15:35:09 | ERROR | signup 18 []
+2019-12-08 15:35:09 | WARNING | {"is_error":true,"error_type":102,"error_message":null,"result":""}
+2019-12-08 15:36:46 | WARNING | {"is_error":true,"error_type":401,"error_message":"user name is already exist","result":""}
+2019-12-08 15:38:03 | WARNING | {"is_error":true,"error_type":401,"error_message":"user name is already exist","result":""}
+2019-12-08 15:38:17 | WARNING | {"is_error":true,"error_type":401,"error_message":"user name is already exist","result":""}
+2019-12-08 15:40:44 | WARNING | {"is_error":true,"error_type":401,"error_message":"user name is already exist","result":""}
+2019-12-08 15:58:51 | WARNING | {"is_error":true,"error_type":401,"error_message":"wrong user name or password","result":""}
+2019-12-08 15:58:59 | WARNING | {"is_error":true,"error_type":401,"error_message":"wrong user name or password","result":""}

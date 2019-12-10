@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <title>注册垃圾版豆瓣电影用户</title>
+
+    <link rel="stylesheet" href="./css/libs/pure-min.css">
+    <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.css" rel="stylesheet">
+    <script src="./js/libs/vue.js"></script>
+    <script src="./js/libs/jquery-3.4.1.min.js"></script>
+    <script src="./js/libs/sha3.js"></script>
+
+    <script src="./js/store.js"></script>
+
+    <script>
+        store = new store_builder();
+        store.put('user_name', '');
+        store.put('password', '');
+        store.put('password2', '');
+
+        app = '';
+
+        $().ready(function() {
+            init_app();
+        });
+
+        function init_app() {
+            app = new Vue({
+                el: "#app",
+                data: store.state,
+                methods: {
+                    check_sign_up: function() {
+                        if (this.user_name == "") {
+                            alert("用户名不能为空");
+                            return;
+                        }
+                        if (this.password == "") {
+                            alert("密码不能为空");
+                            return;
+                        }
+                        if (this.user_name.length > 12) {
+                            alert("用户名长度不能超过12个字符");
+                            return;
+                        }
+                        if (this.password2 != this.password) {
+                            alert("两次输入的密码必须一致");
+                            return;
+                        }
+                        return true;
+                    },
+                    sign_up: function() {
+                        if (!this.check_sign_up()) {
+                            return;
+                        }
+                        let sha_builder = new jsSHA("SHA3-512", "TEXT");
+                        sha_builder.update(this.password);
+                        let sha3 = sha_builder.getHash("HEX");
+                        $.ajax({
+                            url: "./php/view/sign_up.php",
+                            type: "POST",
+                            data: {
+                                user_name: this.user_name,
+                                password: sha3,
+                            },
+                            error: function() {
+                                alert("网络连接异常！");
+                            },
+                            success: function(data) {
+                                let response = JSON.parse(data);
+                                if (response.is_error) {
+                                    if (response.error_type == "401") {
+                                        alert("用户名已存在");
+                                    } else {
+                                        alert("注册失败!");
+                                    }
+                                } else {
+                                    alert("注册成功");
+                                    window.location.assign("./login.html");
+                                }
+                            }
+                        })
+                    }
+                },
+            });
+        }
+    </script>
+
+    <style>
+        .view-holder {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .view-container {
+            padding: 1.25rem;
+            border-style: solid;
+            border-radius: 0.75rem;
+            border-color: #e6e6e6;
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="view-holder">
+        <div id="app" class="view-container">
+            <form class="pure-form pure-form-stacked">
+                <fieldset>
+                    <legend>注册垃圾版豆瓣电影用户</legend>
+
+                    <label>用户名</label>
+                    <input v-model="user_name" type="text" maxlength="12" placeholder="user name">
+
+                    <label>密码</label>
+                    <input v-model="password" type="password" placeholder="password">
+
+                    <label>请在此输入密码</label>
+                    <input v-model="password2" type="password" placeholder="password again">
+                </fieldset>
+                <fieldset>
+                    <button v-on:click="sign_up()" class="pure-button" type="button">注册</button>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+    <script type="text/javascript" color="0,0,200" zIndex="-2" count="150" src="./js/libs/canvas-nest.js"></script>
+</body>
+
+</html>

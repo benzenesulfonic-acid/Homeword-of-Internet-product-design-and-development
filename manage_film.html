@@ -7,8 +7,7 @@
     <title>管理电影类型</title>
 
     <link rel="stylesheet" href="./css/libs/pure-min.css">
-    <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+    <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.css" rel="stylesheet">
     <script src="./js/libs/vue.js"></script>
     <script src="./js/libs/jquery-3.4.1.min.js"></script>
 
@@ -17,13 +16,35 @@
     <script>
         var store = new store_builder();
         store.put('functions', '');
+        store.put('filters', [
+            ['name', '电影名'],
+            ['language', '语言'],
+            ['release_time', '上映时间'],
+            ['director', '导演'],
+            ['screenwriter', '编辑'],
+            ['starring', '主演'],
+            ['type', '类型']
+        ]);
+        store.put('select_filters', [{
+            'filter_type': '',
+            'value': ''
+        }]);
+        store.put('types', '');
+        store.put('result_films', []);
+        store.put('film_result_state', {
+            result_ready: false,
+            is_finish: true,
+            next_offset: undefined,
+        });
 
         var nav = '';
         var app = '';
 
         $().ready(function() {
             init_functions();
+            get_types();
             init_nav();
+            init_app();
         });
 
         //设置侧栏
@@ -52,18 +73,230 @@
                 }
             });
         }
+
+        //获取所有类型
+        function get_types() {
+            $.ajax({
+                url: "./php/manage/list_types.php",
+                type: 'GET',
+                error: function() {
+                    alert("网络连接错误!");
+                },
+                success: function(data) {
+                    let result = JSON.parse(data);
+                    if (result.is_error) {
+                        alert("获取类型失败");
+                    } else {
+                        store.put('types', result.result);
+                    }
+                }
+            });
+        }
+
+        //搜索符合筛选器的电影
+        function get_films(filters = [], offset = 0, limit = 100, callback = undefined) {
+            //清洗filters
+            filters = JSON.parse(JSON.stringify(filters));
+            let null_item_index = 0;
+            while (null_item_index != -1) {
+                null_item_index = -1;
+                for (index in filters) {
+                    if (filters[index].filter_type == '' || filters[index].filter_type == undefined || filters[index].value == '' || filters[index].value == undefined) {
+                        null_item_index = index;
+                        break;
+                    }
+                    if (filters[index].filter_type == 'release_time') {
+                        if (filters[index].value.begin_time == '') {
+                            filters[index].value.begin_time = '1000-01-01';
+                        }
+                        if (filters[index].value.end_time == '') {
+                            filters[index].value.end_time = '9000-01-01';
+                        }
+                    }
+                }
+                if (null_item_index >= 0) {
+                    filters.splice(null_item_index, 1);
+                }
+            }
+            //发起请求
+            $.ajax({
+                url: './php/manage/get_films.php',
+                type: 'GET',
+                data: {
+                    filters: JSON.stringify(filters),
+                    offset: offset,
+                    limit: limit,
+                },
+                error: function() {
+                    alert("网络连接错误!");
+                    if (callback != undefined) {
+                        callback(false);
+                    }
+                },
+                success: function(data) {
+                    let response = JSON.parse(data);
+                    if (response.is_error == false || response.error_type == 402) {
+                        if (callback != undefined) {
+                            callback(response.result);
+                        }
+                    } else {
+                        alert("获取电影信息失败");
+                        if (callback != undefined) {
+                            callback(false);
+                        }
+                    }
+                }
+            });
+        }
+
+
+        //实例化主VUE
+        function init_app() {
+            app = new Vue({
+                el: "#app",
+                data: store.state,
+                methods: {
+                    //选择了一个筛选器类别
+                    selecting_filter_type: function(filter_type) {
+                        let select_filters_size = this.$data.select_filters.length;
+                        for (index in this.$data.select_filters) {
+                            let select_filter = this.$data.select_filters[index];
+                            if (select_filter.filter_type == filter_type) {
+                                //处理类型为放映时间时的value
+                                if (filter_type == 'release_time') {
+                                    select_filter.value = {
+                                        'begin_time': '',
+                                        'end_time': ''
+                                    }
+                                } else {
+                                    select_filter.value = '';
+                                }
+                                //当选择最后一个filter时自动添加下一个
+                                if (index == select_filters_size - 1) {
+                                    this.$data.select_filters.push({
+                                        'filter_type': '',
+                                        'value': ''
+                                    })
+                                }
+                                break;
+                            }
+                        }
+                    },
+                    //删除一个筛选条件
+                    delete_filter: function(filter_type) {
+                        let target_index = -1;
+                        for (index in this.select_filters) {
+                            if (this.select_filters[index].filter_type == filter_type) {
+                                target_index = index;
+                                break;
+                            }
+                        }
+                        if (target_index != this.select_filters.length - 1) {
+                            if (target_index >= 0) {
+                                this.select_filters.splice(target_index, 1);
+                            }
+                        }
+                    },
+                    //删除所以有筛选器
+                    delete_all_filters: function() {
+                        this.select_filters.length = 0;
+                        this.$data.select_filters.push({
+                            'filter_type': '',
+                            'value': ''
+                        });
+                    },
+                    //搜索符合筛选器的电影
+                    search_button_click: function() {
+                        let that = this;
+                        get_films(this.select_filters, 0, 100, function(result) {
+                            if (result != false) {
+                                that.film_result_state.result_ready = true;
+                                that.film_result_state.next_offset = result.next_offset;
+                                that.film_result_state.is_finish = result.is_finish;
+                                for (index in result.films) {
+                                    that.result_films.push(result.films[index]);
+                                }
+                            }
+                        });
+                    },
+                    //确定合适的电影名
+                    fix_film_name: function(film) {
+                        let fix_name = '';
+                        let max_len = 12;
+                        if (film.name_CN != '' && film.name != undefined) {
+                            fix_name += film.name_CN;
+                            if (film.name != '' && film.name != undefined) {
+                                fix_name += "(" + film.name + ")";
+                            }
+                        } else if (film.name != '' && film.name != undefined) {
+                            fix_name += film.name;
+                        }
+                        if (fix_name.length > max_len) {
+                            fix_name = fix_name.substr(0, max_len - 3) + '...';
+                        }
+                        return fix_name;
+                    },
+                },
+                computed: {
+                    unused_filters: function() {
+                        let unused_filters = JSON.parse(JSON.stringify(this.filters));
+                        for (index_i in this.filters) {
+                            let used = false;
+                            for (index_j in this.select_filters) {
+                                if (this.select_filters[index_j].filter_type == this.filters[index_i][0]) {
+                                    used = true;
+                                    break;
+                                }
+                            }
+                            unused_filters[index_i][2] = used;
+                        }
+                        return unused_filters;
+                    },
+                    result_films_length: function() {
+                        return this.result_films.length;
+                    }
+                }
+            });
+        }
     </script>
 
     <style>
         .container {
-            padding: 1em 2em;
+            margin: 1em 2em;
             position: relative;
+        }
+        
+        a:link {
+            color: #000000;
+        }
+        
+        a:visited {
+            color: #000000;
+        }
+        
+        .filter-group {
+            padding-top: 1rem;
+        }
+        
+        .filter-group .filter-right-arrow {
+            display: inline;
+            text-align: center;
+        }
+        
+        .filter-group form .filter-type {
+            width: 100%;
+        }
+        
+        .state-bar {
+            margin: 0;
+            color: grey;
+            font-size: 0.75em;
         }
     </style>
 </head>
 
 <body>
-    <div id="app" style="height: 100vh;">
+    <div style="height: 100vh;">
         <div class="pure-g">
             <div class="pure-u-1-5 pure-menu nav-bar">
                 <ul id="nav" class="pure-menu-list">
@@ -76,13 +309,82 @@
             </div>
             <div class="pure-u-4-5">
                 <div id="app" class="container">
-                    <div>
-                        <h3>
-                            <i class="fa fa-sliders-h"></i><span>筛选器</span>
-                            <div style="">
-                                <i class="fa fa-close "></i><span>清楚所有筛选器</span>
+                    <div class=" pure-g">
+                        <div class="pure-u-4-5">
+                            <h2>
+                                <span></span><i class="fa fa-filter" aria-hidden="true"></i>筛选器</span>
+                            </h2>
+                            <div>
+                                <a v-on:click="delete_all_filters()" href="#"><span><i class="fa fa-close "></i>清楚所有筛选器</span></a>
                             </div>
-                        </h3>
+                            <!--筛选器组-->
+                            <div v-for="select_filter in select_filters" class="filter-group">
+                                <form class="pure-form pure-g">
+                                    <!--筛选器类型-->
+                                    <div class="pure-u-10-24">
+                                        <select v-on:change="selecting_filter_type(select_filter.filter_type)" v-model="select_filter.filter_type" class="filter-type">
+                                            <option value="" disabled selected>选择筛选器</option>
+                                            <option v-for="filter in unused_filters" v-bind:disabled="filter[2]" v-bind:value="filter[0]">{{filter[1]}}</option>
+                                        </select>
+                                    </div>
+                                    <div class="pure-u-1-24 filter-right-arrow">
+                                        <i class="fa fa-long-arrow-right"></i>
+                                    </div>
+                                    <!--筛选器值-->
+                                    <div v-if="select_filter.filter_type == 'type'" class="pure-u-10-24">
+                                        <!--类别筛选器-->
+                                        <select v-model="select_filter.value" style="width: 100%;">
+                                            <option value="" disabled selected>选择类别</option>
+                                            <option v-for="type in types" v-bind:value="type.type_id">{{type.type_name}}</option>
+                                        </select>
+                                    </div>
+                                    <div v-else-if="select_filter.filter_type == 'release_time'">
+                                        <!--上映时间筛选器-->
+                                        <div class="pure-u-12-24">
+                                            <input v-model="select_filter.value.begin_time" type="date">
+                                        </div>
+                                        <div class="pure-u-12-24">
+                                            <input v-model="select_filter.value.end_time" type="date">
+                                        </div>
+                                    </div>
+                                    <div v-else class="pure-u-10-24">
+                                        <!--其他筛选器-->
+                                        <input v-model="select_filter.value" type="text" style="width: 100%;">
+                                    </div>
+                                    <!--删除按钮-->
+                                    <div class="pure-u-1-24 filter-right-arrow">
+                                        <a v-on:click="delete_filter(select_filter.filter_type)" href="#"><i class="fa fa-close "></i> </a>
+                                    </div>
+
+                                </form>
+                            </div>
+                            <button v-on:click="search_button_click()" class="pure-button" style="margin-top: 0.5rem;">搜索</button>
+                            <hr>
+                        </div>
+                    </div>
+                    <div v-if="film_result_state.result_ready">
+                        <p class="state-bar"><span>当前结果数：{{result_films_length}}，</span><span>已显示所有结果:{{film_result_state.is_finish?'是':'否'}}</span></p>
+                        <table class="pure-table pure-table-striped pure-table-horizontal">
+                            <thead>
+                                <tr>
+                                    <th>电影名</th>
+                                    <th>类型</th>
+                                    <th>主演</th>
+                                    <th>上映时间</th>
+                                    <th>语言</th>
+                                    <th>豆瓣链接</th>
+                                    <th>导演</th>
+                                    <th>编辑</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="film in result_films">
+                                    <td>
+                                        <a href="#">{{fix_film_name(film)}}</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
