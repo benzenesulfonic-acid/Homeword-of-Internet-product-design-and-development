@@ -24,6 +24,8 @@ if(isset($_POST['user_name']) && isset($_POST['password'])){
                     $password=$result[0]['password'];
                     if(password_verify($_POST['password'],$password)){
                         $response->set_response(true,'');
+                        session_start();
+                        $_SESSION['user_id']=$_POST['user_name'];
                     }
                     else{
                         $response->set_response(false,401,'wrong user name or password');

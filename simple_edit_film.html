@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <title>垃圾版豆瓣电影管理</title>
+
+    <link rel="stylesheet" href="./css/libs/pure-min.css">
+    <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.css" rel="stylesheet">
+    <script src="./js/libs/vue.js"></script>
+    <script src="./js/libs/jquery-3.4.1.min.js"></script>
+    <script src="./js/libs/sha3.js"></script>
+
+    <script src="./js/store.js"></script>
+
+    <script>
+        var store = new store_builder();
+        store.put('all_film', new Array());
+        store.put('operate_film', {
+            "id": "",
+            "name": "",
+            "year": ""
+        })
+
+        app = '';
+
+        $().ready(function() {
+            getFilms(function(result) {
+                if (result != null && result != '') {
+                    store.state['all_film'] = result;
+                }
+            });
+            initApp();
+        });
+
+        function initApp() {
+            app = new Vue({
+                el: "#app",
+                data: store.state,
+                methods: {
+                    select_film: function(film) {
+                        this.operate_film = film;
+                    },
+                    delete_film: function() {
+                        $.ajax({
+                            url: "./php/manage/simple_delete_film.php",
+                            type: "POST",
+                            data: {
+                                id: this.operate_film.id,
+                            },
+                            error: function() {
+                                alert("删除数据失败");
+                            },
+                            success: function(data) {
+                                let reponse = JSON.parse(data);
+                                if (reponse.is_error) {
+                                    alert("删除数据失败");
+                                } else {
+                                    getFilms(function(result) {
+                                        if (result != null && result != '') {
+                                            store.state['all_film'] = result;
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    },
+                    operate_film_select: function() {
+                        $.ajax({
+                            url: "./php/manage/simple_operate_film.php",
+                            type: "POST",
+                            data: {
+                                id: this.operate_film.id,
+                                name: this.operate_film.name,
+                                year: this.operate_film.year,
+                            },
+                            error: function() {
+                                alert("修改数据失败");
+                            },
+                            success: function(data) {
+                                let reponse = JSON.parse(data);
+                                if (reponse.is_error) {
+                                    alert("修改数据失败");
+                                } else {
+                                    getFilms(function(result) {
+                                        if (result != null && result != '') {
+                                            store.state['all_film'] = result;
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    },
+                    set_film: function(result) {
+                        if (result != null && result != '') {
+                            store.state['all_film'] = result;
+                        }
+                    }
+                },
+                computed: {
+                    get_films: function() {
+                        return this.films
+                    }
+                }
+            });
+        }
+
+        function getFilms(callback) {
+            $.ajax({
+                url: "./php/manage/simple_get_film.php",
+                type: "GET",
+                data: {
+                    manage: true,
+                },
+                error: function() {
+                    alert("获取电影信息失败");
+                },
+                success: function(data) {
+                    let reponse = JSON.parse(data);
+                    if (reponse.is_error) {
+                        alert("获取电影信息失败");
+                    } else {
+                        callback(reponse.result);
+                    }
+                }
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <div id="app" style="margin: 1em;">
+        <table v-if="all_film.length>0" class="pure-table pure-table-striped pure-table-horizontal">
+            <tr>
+                <th>ID</th>
+                <th>电影名</th>
+                <th>年代</th>
+                <th></th>
+            </tr>
+            <tr v-for="a_film in all_film">
+                <td>{{a_film.id}}</td>
+                <td>{{a_film.name}}</td>
+                <td>{{a_film.year}}</td>
+                <td><button class="pure-button" v-on:click="select_film(a_film)">选中</button></td>
+            </tr>
+        </table>
+        <p v-else>0结果</p>
+        <form class="pure-form pure-form-stacked">
+            <label>id</label>
+            <input type="number" v-model="operate_film.id" placeholder="添加时非必填">
+
+            <label>电影名</label>
+            <input type="text" v-model="operate_film.name">
+
+            <label>年代</label>
+            <input type="number" v-model="operate_film.year">
+
+            <br>
+            <button v-on:click="delete_film()" type="button" class="pure-button">删除</button>
+            <button v-on:click="operate_film_select()" type="button" class="pure-button">修改或添加</button>
+        </form>
+    </div>
